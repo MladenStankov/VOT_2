@@ -1,4 +1,4 @@
-import pool from "../database/pool";
+import pool from "../database/pool.js";
 
 export async function createTask(title, description, username) {
     await pool.query("INSERT INTO tasks (title, description, username) VALUES (?, ?, ?)",

@@ -3,9 +3,10 @@ import bodyParser from "body-parser"
 import session from "express-session"
 import Keycloak from "keycloak-connect"
 import dotenv from "dotenv" 
+import cors from "cors"
 import { keycloakConfig } from "./keycloakConfig.js"
-import { taskRoute } from "./src/routes/task.js"
-import { authRoute } from "./src/routes/authentication.js"
+import taskRoute from "./src/routes/task.js"
+import authRoute from "./src/routes/authentication.js"
 
 dotenv.config()
 

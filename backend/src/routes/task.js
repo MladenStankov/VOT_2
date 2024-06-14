@@ -1,6 +1,6 @@
 import express from "express";
 import Keycloak from "keycloak-connect";
-import { keycloakConfig } from "../KeycloakConfig.js";
+import { keycloakConfig } from "../../keycloakConfig.js"
 import { createTask, getTasks } from "../controllers/task.js";
 
 const taskRoute = express.Router();

@@ -1,0 +1,104 @@
+services:
+  mysql-source:
+    image: mysql:8.0
+    container_name: mysql-source
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1024M
+        reservations:
+          memory: 512M
+    ports: 
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: task_manager
+    volumes:
+      - mysql_source_data:/var/lib/mysql
+      - ./database/source-my.cnf:/etc/mysql/my.cnf
+      - ./database/queries/source:/docker-entrypoint-initdb.d 
+  
+  mysql-replica:
+    image: mysql:8.0
+    container_name: mysql-replica
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1024M
+        reservations:
+          memory: 512M
+    ports: 
+      - 3307:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: task_manager
+    volumes:
+      - mysql_replica_data:/var/lib/mysql
+      - ./database/replica-my.cnf:/etc/mysql/my.cnf
+      - ./database/queries/replica:/docker-entrypoint-initdb.d 
+    depends_on:
+      - mysql-source
+
+  proxysql:
+    image: proxysql/proxysql:latest
+    container_name: proxysql
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1024M
+        reservations:
+          memory: 512M
+    ports:
+      - 6032:6032 # admin
+      - 6033:6033 # proxy interface
+    volumes:
+      - ./database/proxysql.cnf:/etc/proxysql.cnf
+      - ./database/queries/initproxysql.sql:/docker-entrypoint-initdb.d/initproxysql.sql
+    command: ["sh", "-c", "proxysql --initial -f /etc/proxysql.cnf && sleep 10 && mysql -u admin -p admin -h 127.0.0.1 -P 6032 < /docker-entrypoint-initdb.d/proxysql_init.sql"]
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    command: -v start-dev --import-realm
+    environment:
+      - DB_VENDOR=h2
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=pass
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1536M
+        reservations:
+          memory: 1024M
+    ports:
+      - "8080:8080"
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+      - ./keycloak:/opt/keycloak/data/import
+
+  backend:
+    build: ./backend
+    container_name: backend
+    environment:
+      - NODE_OPTIONS=--max_old_space_size=512
+      - GENERATE_SOURCEMAP=false
+    ports: 
+      - 5000:5000
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          memory: 128M
+
+volumes:
+  mysql_source_data:
+  mysql_replica_data:
+  keycloak_data:

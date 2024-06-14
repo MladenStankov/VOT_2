@@ -1,0 +1,15 @@
+CREATE DATABASE IF NOT EXISTS task_manager;
+USE task_manager;
+
+CREATE TABLE tasks (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(256) NOT NULL,
+    description VARCHAR(256),
+    username VARCHAR(256) NOT NULL
+);
+
+CREATE TABLE users (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(256) NOT NULL UNIQUE,
+    password VARCHAR(256) NOT NULL
+);

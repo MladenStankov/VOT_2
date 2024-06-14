@@ -1,0 +1,6 @@
+[mysqld]
+server-id=1
+log_bin=mysql-bin
+binlog_do_db=task_manager
+read_only=0
+default-authentication-plugin=mysql_native_password

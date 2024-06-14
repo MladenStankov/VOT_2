@@ -1,0 +1,39 @@
+datadir="/var/lib/proxysql"
+admin_variables=
+{
+    admin_credentials="admin:admin"
+    mysql_ifaces="0.0.0.0:6032"
+}
+
+mysql_variables=
+{
+    threads=4
+    max_connections=2048
+    default_query_delay=0
+    default_query_timeout=36000000
+    have_compress=true
+    poll_timeout=2000
+    interfaces="0.0.0.0:6033"
+    default_schema="information_schema"
+    stacksize=1048576
+    server_version="8.0"
+    connect_retries_on_failure=10
+}
+
+mysql_servers =
+(
+    { address="mysql-source", port=3306, hostgroup=0, max_connections=1000 },
+    { address="mysql-replica", port=3306, hostgroup=1, max_connections=1000 }
+)
+
+mysql_users =
+(
+    { username = "root", password = "password", default_hostgroup = 0 }
+)
+
+mysql_query_rules =
+(
+    { rule_id=1, match_pattern="^SELECT.*FOR UPDATE", destination_hostgroup=0, apply=true },
+    { rule_id=2, match_pattern="^SELECT", destination_hostgroup=1, apply=true },
+    { rule_id=3, match_pattern="^(INSERT|UPDATE|DELETE|REPLACE|CREATE|DROP|ALTER|TRUNCATE|RENAME|GRANT|REVOKE|FLUSH|LOAD|CALL|ANALYZE|OPTIMIZE|REPAIR|INSTALL|UNINSTALL|SET)", destination_hostgroup=0, apply=true }
+)
